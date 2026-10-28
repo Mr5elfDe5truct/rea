@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Builds the per-user Windows x64 installer (with uninstaller) for REA.
+# Builds the Windows x64 installer (with uninstaller) and portable zip for REA.
 #
 # Requires Linux with: node/npm (see .nvmrc), curl, unzip, tar, makensis (NSIS),
 # and MinGW-w64 (x86_64-w64-mingw32-g++, x86_64-w64-mingw32-dlltool) for the
-# Windows native addon. Output: build/windows-installer/REA-Setup-<version>-x64.exe
+# Windows native addon. Outputs in build/windows-installer/:
+#   REA-Setup-<version>-x64.exe     per-user installer with uninstaller
+#   REA-Portable-<version>-x64.zip  no-install build that runs from any folder
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -73,3 +75,18 @@ cd "$here"
 makensis -V2 -DVERSION="$version" -DSTAGE_DIR="$stage" \
   -DOUT_FILE="$work/REA-Setup-$version-x64.exe" rea.nsi
 sha256sum "$work/REA-Setup-$version-x64.exe" | tee "$work/REA-Setup-$version-x64.exe.sha256"
+
+echo "==> Building portable zip"
+portable_name="REA-Portable-$version-x64"
+portable="$work/$portable_name"
+cp -a "$stage" "$portable"
+rm -rf "$portable/bin"
+sed 's/$/\r/' "$here/PORTABLE.txt" > "$portable/README-PORTABLE.txt"
+entry='"%~dp0node\node.exe" "%~dp0app\node_modules\rea-agents\scripts\rea.mjs" %*'
+for name in rea rea-agents; do
+  printf '@echo off\r\nsetlocal\r\n%s\r\nexit /b %%ERRORLEVEL%%\r\n' "$entry" > "$portable/$name.cmd"
+done
+printf '@echo off\r\ntitle REA %s (portable)\r\nset "PATH=%%~dp0;%%PATH%%"\r\necho REA %s portable - type "rea --help" to list commands, "rea setup" to configure agents.\r\ncmd /k\r\n' \
+  "$version" "$version" > "$portable/REA Command Prompt.cmd"
+(cd "$work" && rm -f "$portable_name.zip" && zip -q -r -9 "$portable_name.zip" "$portable_name")
+sha256sum "$work/$portable_name.zip" | tee "$work/$portable_name.zip.sha256"

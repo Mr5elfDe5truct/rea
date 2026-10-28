@@ -1,0 +1,28 @@
+REA portable for Windows 10+ x64
+================================
+
+No installation needed. Extract this folder anywhere (a local folder or a USB
+drive) and run it from there. It carries its own Node.js runtime and does not
+change PATH, the registry or the Start menu.
+
+Getting started
+  - Double-click "REA Command Prompt.cmd", then type:  rea --help
+  - From any other terminal, run rea.cmd by its full path, for example:
+        "D:\REA-Portable\rea.cmd" analyze-javascript-application C:\path\to\app --json
+
+Connecting AI agents (optional)
+  - In "REA Command Prompt.cmd", run:  rea setup
+  - Agents are registered with this folder's current location. If you move or
+    rename the folder, or the drive letter changes, run "rea setup" again.
+
+What stays on this computer
+  REA itself lives entirely in this folder, but like any REA install it keeps
+  caches and analysis state in your user profile, and "rea setup" writes MCP
+  entries into your agents' configuration files.
+
+Removing it
+  1. Optional: run  rea uninstall  (add --purge-data to also delete caches and
+     state) to remove REA's agent entries.
+  2. Delete this folder.
+
+Ghidra, IDA and Hopper remain optional and bring-your-own.

@@ -1,7 +1,11 @@
-# Windows installer
+# Windows installer and portable build
 
-`build.sh` produces `build/windows-installer/REA-Setup-<version>-x64.exe`, a
-per-user NSIS installer for Windows 10+ x64 that needs no administrator rights.
+`build.sh` produces two Windows 10+ x64 packages in `build/windows-installer/`:
+
+- `REA-Setup-<version>-x64.exe`, a per-user NSIS installer with an uninstaller
+  that needs no administrator rights.
+- `REA-Portable-<version>-x64.zip`, a no-install build that runs from any
+  folder or USB drive (see [Portable build](#portable-build)).
 
 ## What it installs
 
@@ -23,6 +27,16 @@ files, shortcuts, `PATH` entry and registry entry. Its components page also
 runs `rea uninstall` to remove REA's agent MCP entries and skills (on by
 default) and optionally `rea uninstall --purge-data` to delete caches and
 state. Silent mode: `"Uninstall REA.exe" /S`.
+
+## Portable build
+
+The zip holds the same runtime and application as the installer, with
+`rea.cmd`, `rea-agents.cmd` and `REA Command Prompt.cmd` at the top level and
+the user notes from `PORTABLE.txt` as `README-PORTABLE.txt`. It writes nothing
+to `PATH`, the registry or the Start menu. REA still keeps its caches and state
+in the user profile, and `rea setup` registers agents with the folder's
+absolute path (node.exe plus `rea.mjs`), so setup must be rerun after the
+folder moves. Remove it with `rea uninstall` and then by deleting the folder.
 
 ## Building
 
