@@ -74,7 +74,7 @@ echo "==> Compiling installer"
 cd "$here"
 makensis -V2 -DVERSION="$version" -DSTAGE_DIR="$stage" \
   -DOUT_FILE="$work/REA-Setup-$version-x64.exe" rea.nsi
-sha256sum "$work/REA-Setup-$version-x64.exe" | tee "$work/REA-Setup-$version-x64.exe.sha256"
+(cd "$work" && sha256sum "REA-Setup-$version-x64.exe" | tee "REA-Setup-$version-x64.exe.sha256")
 
 echo "==> Building portable zip"
 portable_name="REA-Portable-$version-x64"
@@ -89,4 +89,4 @@ done
 printf '@echo off\r\ntitle REA %s (portable)\r\nset "PATH=%%~dp0;%%PATH%%"\r\necho REA %s portable - type "rea --help" to list commands, "rea setup" to configure agents.\r\ncmd /k\r\n' \
   "$version" "$version" > "$portable/REA Command Prompt.cmd"
 (cd "$work" && rm -f "$portable_name.zip" && zip -q -r -9 "$portable_name.zip" "$portable_name")
-sha256sum "$work/$portable_name.zip" | tee "$work/$portable_name.zip.sha256"
+(cd "$work" && sha256sum "$portable_name.zip" | tee "$portable_name.zip.sha256")
