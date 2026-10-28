@@ -121,6 +121,28 @@ For native analysis, configure a provider first. See the
 [CLI and Evidence guide](docs/cli.md) for native commands, provider selection,
 snapshots and scripting.
 
+### Windows installer and portable build
+
+For Windows 10 or later (x64), REA can also be packaged as a standalone app
+that bundles its own Node.js runtime, so neither Node.js nor npm needs to be
+installed:
+
+- **Installer** (`REA-Setup-<version>-x64.exe`): installs for the current user
+  without administrator rights, adds `rea` to your `PATH`, and creates Start
+  menu shortcuts for a REA command prompt and `rea setup`. Remove it from
+  **Settings > Apps** or with **Uninstall REA** in the Start menu. The
+  uninstaller can also remove REA's agent registrations and, optionally, its
+  caches.
+- **Portable zip** (`REA-Portable-<version>-x64.zip`): extract it to any folder
+  or USB drive and open `REA Command Prompt.cmd`. It changes nothing on the
+  system; delete the folder to remove it. Rerun `rea setup` after moving the
+  folder, because agents are registered with its current path.
+
+Build both on Linux with `packaging/windows/build.sh`. Prerequisites and
+details are in `packaging/windows/README.md`. To update a packaged install,
+install or extract a newer build. `rea update` applies only to npm and Bun
+global installs.
+
 ### Update REA
 
 REA changes quickly, and new releases include frequent bug fixes. Keep your
