@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>REA</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">REA</span>
+        <span class="brand-sub" id="brand-version"
+          >Reverse Engineer Anything</span
+        >
+      </div>
+      <nav class="nav" id="nav">
+        <button class="nav-item" data-page="home">Home</button>
+        <button class="nav-item" data-page="runs">
+          Runs <span class="count" id="runs-count"></span>
+        </button>
+        <button class="nav-item" data-page="health">Health &amp; agents</button>
+        <button class="nav-item" data-page="settings">Settings</button>
+      </nav>
+      <div class="tool-search">
+        <input
+          id="tool-search"
+          type="search"
+          placeholder="Search 0 tools"
+          spellcheck="false"
+        />
+      </div>
+      <div class="tool-list" id="tool-list"></div>
+      <div class="engine-status" id="engine-status">
+        <span class="dot" id="engine-dot"></span>
+        <span id="engine-text">Starting engine…</span>
+        <button class="link" id="engine-logs">Logs</button>
+        <button class="link" id="engine-restart">Restart</button>
+      </div>
+    </aside>
+    <main class="main" id="main"></main>
+    <div class="drawer hidden" id="logs-drawer">
+      <div class="drawer-head">
+        <strong>Engine log</strong>
+        <span class="muted"
+          >Messages REA's engine wrote to its error output.</span
+        >
+        <button class="link" id="logs-close">Close</button>
+      </div>
+      <pre id="logs-body"></pre>
+    </div>
+    <div class="drop-overlay hidden" id="drop-overlay">
+      Drop a file to use it
+    </div>
+  </body>
+</html>

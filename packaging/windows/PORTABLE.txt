@@ -6,23 +6,28 @@ drive) and run it from there. It carries its own Node.js runtime and does not
 change PATH, the registry or the Start menu.
 
 Getting started
-  - Double-click "REA Command Prompt.cmd", then type:  rea --help
+  - Double-click REA.exe to open the desktop app. It needs the Microsoft Edge
+    WebView2 Runtime, which Windows 11 and current Windows 10 already include.
+  - Or double-click "REA Command Prompt.cmd", then type:  rea --help
   - From any other terminal, run rea.cmd by its full path, for example:
         "D:\REA-Portable\rea.cmd" analyze-javascript-application C:\path\to\app --json
 
 Connecting AI agents (optional)
-  - In "REA Command Prompt.cmd", run:  rea setup
+  - In the desktop app, open "Health & agents" and click "Set up AI agents",
+    or in "REA Command Prompt.cmd" run:  rea setup
   - Agents are registered with this folder's current location. If you move or
     rename the folder, or the drive letter changes, run "rea setup" again.
 
 What stays on this computer
   REA itself lives entirely in this folder, but like any REA install it keeps
   caches and analysis state in your user profile, and "rea setup" writes MCP
-  entries into your agents' configuration files.
+  entries into your agents' configuration files. The desktop app keeps its
+  settings in %APPDATA%\tools.rea.desktop and its web view cache in
+  %LOCALAPPDATA%\tools.rea.desktop.
 
 Removing it
   1. Optional: run  rea uninstall  (add --purge-data to also delete caches and
      state) to remove REA's agent entries.
-  2. Delete this folder.
+  2. Delete this folder, and optionally the two tools.rea.desktop folders above.
 
 Ghidra, IDA and Hopper remain optional and bring-your-own.

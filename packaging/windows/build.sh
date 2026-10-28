@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Builds the Windows x64 installer (with uninstaller) and portable zip for REA.
 #
-# Requires Linux with: node/npm (see .nvmrc), curl, unzip, tar, makensis (NSIS),
-# and MinGW-w64 (x86_64-w64-mingw32-g++, x86_64-w64-mingw32-dlltool) for the
-# Windows native addon. Outputs in build/windows-installer/:
+# Requires Linux with: node/npm (see .nvmrc), curl, unzip, tar, zip, makensis
+# (NSIS), MinGW-w64 (x86_64-w64-mingw32-g++, x86_64-w64-mingw32-dlltool) for the
+# Windows native addon, and Rust with the x86_64-pc-windows-gnu target for the
+# desktop app in desktop/. Outputs in build/windows-installer/:
 #   REA-Setup-<version>-x64.exe     per-user installer with uninstaller
 #   REA-Portable-<version>-x64.zip  no-install build that runs from any folder
 set -euo pipefail
@@ -51,6 +52,11 @@ echo "==> Fetching Node.js $node_version (win-x64) and Frida $frida_version bind
   unzip -q "node-$node_version-win-x64.zip"
 )
 
+echo "==> Building the REA desktop app (Tauri, x86_64-pc-windows-gnu)"
+desktop_target="$repo/desktop/src-tauri/target/x86_64-pc-windows-gnu/release"
+# Run from the crate so desktop/src-tauri/.cargo/config.toml selects the MinGW linker.
+(cd "$repo/desktop/src-tauri" && cargo build --release --locked --target x86_64-pc-windows-gnu)
+
 echo "==> Staging"
 mv "$work/dl/node-$node_version-win-x64" "$stage/node"
 # REA only needs the runtime; npm, npx and corepack are not shipped.
@@ -60,6 +66,8 @@ mv "$stage/node/LICENSE" "$stage/NODE_LICENSE.txt"
 rm -f "$work/app/package-lock.json"
 find "$work/app" -name '*.pdb' -delete
 mv "$work/app" "$stage/app"
+# REA.exe finds node\ and app\ next to itself; the GNU build loads WebView2Loader.dll.
+cp "$desktop_target/REA.exe" "$desktop_target/WebView2Loader.dll" "$stage/"
 cp LICENSE "$stage/LICENSE.txt"
 cp THIRD_PARTY_NOTICES.md "$stage/"
 
