@@ -49,6 +49,10 @@ export const inspectJadxProvider = async (
               "REA_JADX_ACTIVE_PROCESSOR_COUNT",
               environment.REA_JADX_ACTIVE_PROCESSOR_COUNT,
             ),
+            ...optionalEntry(
+              "REA_JADX_TIMEOUT_MS",
+              environment.REA_JADX_TIMEOUT_MS,
+            ),
           },
     checks: [configurationCheck(configured, availability, jarPath)],
   };

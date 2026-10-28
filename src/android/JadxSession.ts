@@ -31,6 +31,9 @@ import {
 } from "./JadxRelease.js";
 
 /** One owned engine connection; its wire protocol stays inside the Android adapter. */
+/** Per-call SDK bound; the operation signal enforces the configured limit. */
+const JADX_MAX_CALL_TIMEOUT_MS = 3_600_000;
+
 export class JadxSession {
   readonly transport: JadxMcpTransport;
   readonly #client = new Client({ name: "rea-android-adapter", version: "1" });
@@ -214,7 +217,8 @@ export class JadxSession {
       signal.throwIfAborted();
       const response = await this.#client.callTool(
         { name, arguments: input },
-        { timeout: 120_000, signal },
+        // The operation signal carries the configured REA_JADX_TIMEOUT_MS bound.
+        { timeout: JADX_MAX_CALL_TIMEOUT_MS, signal },
       );
       const observedResponse = jsonValueSchema.parse(response);
       const call = { operation: name, input, response: observedResponse };

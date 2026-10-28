@@ -5,7 +5,9 @@ import { expect, it as test } from "vitest";
 
 import {
   inspectJadxAvailability,
+  JADX_DEFAULT_OPERATION_TIMEOUT_MS,
   resolveJadxConfigurationInputs,
+  resolveJadxOperationTimeoutMs,
   validateJadxConfiguration,
 } from "../../../src/android/JadxConfiguration.js";
 import { AnalysisCapabilityUnavailableError } from "../../../src/domain/analysisErrorCore.js";
@@ -166,6 +168,30 @@ it("configures heap and visible processors independently without forcing either"
         _tag: "AnalysisCapabilityUnavailableError",
         reason: expect.stringContaining(name),
       });
+});
+
+test("bounds each JADX operation by REA_JADX_TIMEOUT_MS", () => {
+  expect(resolveJadxOperationTimeoutMs({}, "inspect_android_package")).toBe(
+    JADX_DEFAULT_OPERATION_TIMEOUT_MS,
+  );
+  expect(
+    resolveJadxOperationTimeoutMs(
+      { REA_JADX_TIMEOUT_MS: "900000" },
+      "inspect_android_package",
+    ),
+  ).toBe(900_000);
+  for (const value of ["", "0", "-1", "1.5", "15m", " 900000", "3600001"])
+    expect(() =>
+      resolveJadxOperationTimeoutMs(
+        { REA_JADX_TIMEOUT_MS: value },
+        "inspect_android_package",
+      ),
+    ).toThrow(
+      expect.objectContaining({
+        _tag: "AnalysisCapabilityUnavailableError",
+        reason: expect.stringContaining("REA_JADX_TIMEOUT_MS"),
+      }),
+    );
 });
 
 it("distinguishes a runnable JRE from a missing Java executable", async () => {

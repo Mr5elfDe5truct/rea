@@ -31,13 +31,13 @@ import { RegularFileChangedError } from "../filesystem/RegularFile.js";
 import {
   inspectJadxAvailability,
   resolveJadxConfigurationInputs,
+  resolveJadxOperationTimeoutMs,
   validateJadxConfiguration,
 } from "./JadxConfiguration.js";
 import type { JadxLauncher } from "./JadxMcpTransport.js";
 
 import { JadxSession } from "./JadxSession.js";
 
-const OPERATION_TIMEOUT_MS = 120_000;
 const BRIDGE_SOURCE = fileURLToPath(
   new URL("../../bridge/android/ReaJadxBridge.java", import.meta.url),
 );
@@ -62,14 +62,15 @@ const executionError = (context: {
   cause: unknown;
   request: AndroidRequest;
   timeout: AbortSignal;
+  timeoutMs: number;
   signal: AbortSignal | undefined;
   session: JadxSession | undefined;
 }): AnalysisError => {
-  const { cause, request, timeout, signal, session } = context;
+  const { cause, request, timeout, timeoutMs, signal, session } = context;
   if (signal?.aborted === true)
     return new AnalysisCancelledError(request.operation);
   if (timeout.aborted)
-    return new AnalysisTimeoutError(request.operation, OPERATION_TIMEOUT_MS);
+    return new AnalysisTimeoutError(request.operation, timeoutMs);
   if (cause instanceof AnalysisError) return cause;
   const protocolFailure = session?.transport.failureReason();
   if (protocolFailure !== undefined && protocolFailure !== null)
@@ -323,7 +324,17 @@ export class JadxProvider implements AndroidAnalysisPort {
     request: AndroidRequest,
     options?: ExecutionOptions,
   ): Promise<Outcome> {
-    const timeout = AbortSignal.timeout(OPERATION_TIMEOUT_MS);
+    let timeoutMs: number;
+    try {
+      timeoutMs = resolveJadxOperationTimeoutMs(
+        this.environment,
+        request.operation,
+      );
+    } catch (cause: unknown) {
+      if (cause instanceof AnalysisError) return err(cause);
+      throw cause;
+    }
+    const timeout = AbortSignal.timeout(timeoutMs);
     const signal =
       options?.signal === undefined
         ? timeout
@@ -475,6 +486,7 @@ export class JadxProvider implements AndroidAnalysisPort {
         cause,
         request,
         timeout,
+        timeoutMs,
         signal: options?.signal,
         session,
       });
