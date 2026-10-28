@@ -42,6 +42,7 @@ import {
 } from "./toolResult.js";
 import { parseMcpResponseBudget } from "../config/mcpResponseBudget.js";
 import { parseMcpOutputSchemaProfile } from "../config/mcpOutputSchemaProfile.js";
+import { parseMcpToolSurface } from "../config/mcpToolSurface.js";
 import {
   compactPresentationForMcpInputSchemaProfile,
   parseMcpInputSchemaProfile,
@@ -255,6 +256,7 @@ const createMcpServer = (
   delivery: ToolResultDelivery,
   compactPresentation: CompactInputSchemaPresentation | undefined,
   omitOutputSchemas: boolean,
+  routerSurface: boolean,
 ): EvidenceMcpServer =>
   new EvidenceMcpServer(
     {
@@ -275,6 +277,7 @@ const createMcpServer = (
     delivery,
     compactPresentation,
     omitOutputSchemas,
+    routerSurface,
   );
 
 /**
@@ -338,6 +341,7 @@ export const createServer = (
     delivery,
     selectCompactInputSchemaPresentation(environment),
     omitOutputSchemas,
+    routerSurfaceSelected(environment),
   );
   const gdbSessions = new GdbSessionManager({
     environment: providerEnvironment,
@@ -607,6 +611,14 @@ const outputSchemasOmitted = (
   );
   if (!configured.ok) throw configured.error;
   return configured.value === "off";
+};
+
+const routerSurfaceSelected = (
+  environment: Readonly<NodeJS.ProcessEnv>,
+): boolean => {
+  const configured = parseMcpToolSurface(environment.REA_MCP_TOOL_SURFACE);
+  if (!configured.ok) throw configured.error;
+  return configured.value === "router";
 };
 
 const selectCompactInputSchemaPresentation = (

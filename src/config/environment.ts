@@ -18,6 +18,7 @@ import {
 import { mcpInputSchemaProfileSchema } from "./mcpInputSchemaProfile.js";
 import { mcpOutputSchemaProfileSchema } from "./mcpOutputSchemaProfile.js";
 import { mcpResponseBudgetSchema } from "./mcpResponseBudget.js";
+import { mcpToolSurfaceSchema } from "./mcpToolSurface.js";
 import { parseLoaderArgs, parseStringArray } from "./parsers.js";
 
 const environmentSchema = z.object({
@@ -25,6 +26,7 @@ const environmentSchema = z.object({
   REA_MCP_MAX_RESPONSE_BYTES: mcpResponseBudgetSchema.optional(),
   REA_MCP_INPUT_SCHEMA_PROFILE: mcpInputSchemaProfileSchema.optional(),
   REA_MCP_OUTPUT_SCHEMA_PROFILE: mcpOutputSchemaProfileSchema.optional(),
+  REA_MCP_TOOL_SURFACE: mcpToolSurfaceSchema.optional(),
   REA_IDA_MCP_CONFIG: z
     .string()
     .min(1)

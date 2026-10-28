@@ -374,6 +374,13 @@ const clientConfigurationDetail = (
       ? " If this plan installs Hopper, REA will add HOPPER_LAUNCHER_PATH using the launcher path reported by that installation."
       : " The HOPPER_LAUNCHER_PATH value shown above is the current fallback; if this plan installs Hopper, REA will replace it with the launcher path reported by that installation."
     : "";
+  const clientEntries = Object.entries(client.registrationEnvironment ?? {})
+    .sort(([left], [right]) => compareUnicodeCodePoints(left, right))
+    .map(([name, value]) => `${name}=${value}`);
+  const clientDetail =
+    clientEntries.length === 0
+      ? ""
+      : ` A new registration also sets ${clientEntries.join(", ")}; existing values for these keys are kept.`;
   const persistence = registrationPersistenceDetail(client);
-  return `Add the REA MCP registration for ${client.displayName ?? client.name}; preserve unrelated configuration. The backup path reflects the configuration inspected for this plan; if that file changes before execution, setup will select a recovery path for its current contents. Command: ${command.map((part) => JSON.stringify(part)).join(" ")}.${environmentDetail}${hopperDetail}${persistence === undefined ? "" : ` ${persistence}`}`;
+  return `Add the REA MCP registration for ${client.displayName ?? client.name}; preserve unrelated configuration. The backup path reflects the configuration inspected for this plan; if that file changes before execution, setup will select a recovery path for its current contents. Command: ${command.map((part) => JSON.stringify(part)).join(" ")}.${environmentDetail}${clientDetail}${hopperDetail}${persistence === undefined ? "" : ` ${persistence}`}`;
 };

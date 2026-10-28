@@ -40,6 +40,7 @@ import {
   measureMcpResultWithinBudget,
   TARGET_CONTENT_RESULT_META,
 } from "./toolResultEncoding.js";
+import { ToolRouterTransport } from "./toolRouterTransport.js";
 
 export type { CompactInputSchemaPresentation } from "../contracts/compactInputSchema.js";
 
@@ -119,6 +120,7 @@ export class EvidenceMcpServer extends McpServer {
     readonly delivery: ToolResultDelivery,
     compactPresentation: CompactInputSchemaPresentation | undefined = undefined,
     private readonly omitOutputSchemas = false,
+    private readonly routerSurface = false,
   ) {
     super(info, options);
     this.compactPresentation =
@@ -180,11 +182,15 @@ export class EvidenceMcpServer extends McpServer {
     );
   }
 
-  /** Preserve the SDK transport lifecycle while retaining oversized errors. */
+  /**
+   * Preserve the SDK transport lifecycle while retaining oversized errors.
+   * The router sits outside error recovery, so a routed call is recovered and
+   * marked under the name of the tool that actually ran.
+   */
   override connect(transport: Transport): Promise<void> {
     return super.connect(
       new ErrorEvidenceTransport(
-        transport,
+        this.routerSurface ? new ToolRouterTransport(transport) : transport,
         this.recordEvidence,
         this.delivery,
         this.omitOutputSchemas,

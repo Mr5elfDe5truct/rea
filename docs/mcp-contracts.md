@@ -727,6 +727,26 @@ valid JSON Schema that still accepts every canonical example. Client verificatio
 also checks provider-facing sizes and canonical examples after conversion by
 the actual Kimi Code CLI; local captures do not establish Moonshot acceptance.
 
+### Router tool surface
+
+Setting `REA_MCP_TOOL_SURFACE` to `router`, or starting the server with
+`rea mcp --router`, makes `tools/list` advertise three tools instead of the
+catalog: about 1.5 KB instead of the complete advertisement.
+
+- `search_tools` ranks catalog tools by the query words in their names, titles
+  and descriptions, and returns names with one-sentence summaries. An empty
+  query returns tool groups.
+- `get_tool_schema` returns one tool's description, advertised input schema
+  and annotations.
+- `call_tool` runs the named tool as its own `tools/call` with `arguments`;
+  its result, progress, errors and target-content marking are unchanged. An
+  unknown name returns similar names instead of a protocol error.
+
+The catalog behind the router is the server's own `tools/list`, so the input
+and output schema profiles still apply to it. It is read once and read again
+after the server reports a tool list change. Direct calls to catalog tool
+names still work. The default value `full` keeps the complete advertisement.
+
 ### Output schemas
 
 Self-contained output schemas advertise a content-bound `$id`, including their
