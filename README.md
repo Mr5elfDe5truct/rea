@@ -134,9 +134,10 @@ installed:
   uninstaller can also remove REA's agent registrations and, optionally, its
   caches.
 - **Portable zip** (`REA-Portable-<version>-x64.zip`): extract it to any folder
-  or USB drive and open `REA Command Prompt.cmd`. It changes nothing on the
-  system; delete the folder to remove it. Rerun `rea setup` after moving the
-  folder, because agents are registered with its current path.
+  or USB drive and open `REA Command Prompt.cmd`. It does not change `PATH`,
+  the registry or the Start menu; delete the folder to remove it. Rerun
+  `rea setup` after moving the folder, because agents are registered with its
+  current path.
 
 Build both on Linux with `packaging/windows/build.sh`. Prerequisites and
 details are in `packaging/windows/README.md`. To update a packaged install,
