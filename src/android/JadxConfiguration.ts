@@ -225,6 +225,8 @@ const readJadxConfigurationInputs = async (
   const java = await resolveJava(environment, signal);
   await requireJavaHomeExecutable(environment.JAVA_HOME, java);
   signal?.throwIfAborted();
+  // Validate here too, so availability and doctor report an invalid bound.
+  readJadxOperationTimeoutMs(environment);
   return { jar, java, jvmArguments: resolveJvmArguments(environment) };
 };
 
@@ -473,6 +475,46 @@ const requireJavaHomeExecutable = async (
       "java_runtime",
       cause,
     );
+  }
+};
+
+/** Default bound for one JADX operation, including loading the APK. */
+export const JADX_DEFAULT_OPERATION_TIMEOUT_MS = 120_000;
+/** A larger bound would hide a stalled engine for more than an hour. */
+const JADX_MAX_OPERATION_TIMEOUT_MS = 3_600_000;
+
+/**
+ * Select the per-operation bound. Very large APKs can need several minutes
+ * for JADX to load before the first answer, so callers may raise it.
+ */
+const readJadxOperationTimeoutMs = (
+  environment: Readonly<Record<string, string | undefined>>,
+): number => {
+  const value = environment.REA_JADX_TIMEOUT_MS;
+  if (value === undefined) return JADX_DEFAULT_OPERATION_TIMEOUT_MS;
+  if (
+    !/^[1-9]\d*$/u.test(value) ||
+    Number(value) > JADX_MAX_OPERATION_TIMEOUT_MS
+  )
+    throw configurationFailure(
+      "open_options_invalid",
+      `REA_JADX_TIMEOUT_MS must be a positive integer of at most ${JADX_MAX_OPERATION_TIMEOUT_MS} milliseconds; received ${value}.`,
+      { setting: "REA_JADX_TIMEOUT_MS", value },
+      "jvm_options",
+    );
+  return Number(value);
+};
+
+/** The operation bound, or the projected configuration error for an invalid one. */
+export const resolveJadxOperationTimeoutMs = (
+  environment: Readonly<Record<string, string | undefined>>,
+  operation: AndroidOperation,
+): number => {
+  try {
+    return readJadxOperationTimeoutMs(environment);
+  } catch (cause) {
+    if (!(cause instanceof JadxConfigurationFailure)) throw cause;
+    throw projectConfigurationFailure(operation, cause);
   }
 };
 

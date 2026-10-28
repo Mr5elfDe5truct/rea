@@ -301,7 +301,12 @@ raw runtime response. The observed allocatable heap can differ from configured
 `-Xmx`, especially with Serial GC. Heap is not a total RSS cap: the JVM also
 uses native memory. Independent REA instances have independent queues. Whole
 operations have a **120-second** execution deadline after reaching the queue's
-front; upstream decompilation is limited to **90 seconds**.
+front; upstream decompilation is limited to **90 seconds**. Very large APKs can
+take longer than that for JADX to load. Set `REA_JADX_TIMEOUT_MS` (a positive
+integer of at most 3,600,000) to raise the operation deadline, for example
+`REA_JADX_TIMEOUT_MS=900000` for 15 minutes. Setup carries the value into
+client registrations. A loaded APK stays open for 60 seconds after each
+operation, so follow-up questions avoid the load.
 
 Decoded manifest and method text have a **1 MiB** upstream byte budget and report
 truncation. Class-name pages use indexed slices of up to 4,096 names without changing the
