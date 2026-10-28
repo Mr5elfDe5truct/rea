@@ -360,6 +360,26 @@ Harness integration, with live DeepSeek API compatibility remaining unverified.
 See the [Harness MCP guide](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/mcp/mcp-client/README.md)
 for its native configuration contract.
 
+## Custom AI Workstation
+
+Prestige and Prestige IDE give their local-model agents the MCP servers of the
+[Custom AI Workstation](https://github.com/Mr5elfDe5truct/custom-ai-workstation)'s
+tool server (mcpo on `127.0.0.1:8200`). Setup registers REA in
+`<Workstation>\data\mcpo-extra.json`, the file that holds added tools. It finds
+the Workstation folder in `%USERPROFILE%\RG Studios\workstation-folder.txt`,
+which the Workstation installer writes, and otherwise uses
+`%USERPROFILE%\RG Studios\Workstation`. The Workstation is detected when
+`tools\mcpo-config.json` exists there.
+
+A new registration sets `REA_MCP_TOOL_SURFACE=router`, because local models
+choose poorly among hundreds of tool schemas; see
+[the router tool surface](mcp-contracts.md#router-tool-surface). Remove the
+key, or set it to `full`, to advertise the whole catalog.
+
+After setup, run `update-tools.ps1` in the Workstation folder (or restart it
+with `start-all.ps1`) so the tool server reloads, then tick **rea** under MCP
+tools in Prestige IDE's Settings.
+
 ## Other client settings
 
 For OpenCode, setup writes the V1 `mcp.rea` entry, which OpenCode V1 and V2

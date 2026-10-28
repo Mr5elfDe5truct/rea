@@ -683,11 +683,10 @@ const clientConfigurationDesired = (
     "fragment",
   );
   if (!environment.ok) throw environment.error;
-  const registration = clientRegistrationEntry(
-    format,
-    launcher,
-    environment.value,
-  );
+  const registration = clientRegistrationEntry(format, launcher, {
+    ...client.registrationEnvironment,
+    ...environment.value,
+  });
   const previous = parsed?.servers[PRODUCT_IDENTITY.mcpServerKey];
   if (
     client.name === "kimi" &&

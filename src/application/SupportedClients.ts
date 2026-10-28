@@ -1,6 +1,6 @@
 import { dirname, isAbsolute, join, resolve, win32 } from "node:path";
 import { fileURLToPath } from "node:url";
-import { lstatSync } from "node:fs";
+import { lstatSync, readFileSync } from "node:fs";
 import { err, ok, type Result } from "../domain/result.js";
 import {
   HermesClientPathError,
@@ -35,6 +35,10 @@ export interface SetupClient {
   readonly msixPackage?: MsixPackageView;
   /** A running client can rewrite its configuration from memory. */
   readonly quitBeforeSetup?: boolean;
+  /** Server settings a new registration starts with; existing values win. */
+  readonly registrationEnvironment?: Readonly<Record<string, string>>;
+  /** What the person must do after setup before the client sees REA. */
+  readonly registrationNote?: string;
   readonly format?:
     | "json"
     | "toml"
@@ -98,6 +102,8 @@ interface ClientDefinitionBase {
   readonly displayName: string;
   readonly format: NonNullable<SetupClient["format"]>;
   readonly quitBeforeSetup?: boolean;
+  readonly registrationEnvironment?: Readonly<Record<string, string>>;
+  readonly registrationNote?: string;
   readonly zcodeFallbackPath?: (context: ClientPathContext) => string;
   readonly skillPath?: ClientPath;
   readonly configPaths?: (context: ClientPathContext) => readonly string[];
@@ -269,7 +275,7 @@ export const registrationPersistenceDetail = (
     client.quitBeforeSetup === true
       ? `Quit ${name} fully before approving; closing its window is not enough. A running ${name} can rewrite this file from memory and drop the registration. Start it again after setup.`
       : undefined;
-  const details = [packageDetail, quitDetail].filter(
+  const details = [packageDetail, quitDetail, client.registrationNote].filter(
     (detail): detail is string => detail !== undefined,
   );
   return details.length === 0 ? undefined : details.join(" ");
@@ -474,6 +480,44 @@ const geminiSettings = ({
     ...(trustOverride === undefined ? {} : { trustOverride }),
     platform,
   };
+};
+
+/**
+ * The Custom AI Workstation records its install folder for Prestige in
+ * `RG Studios\workstation-folder.txt`; without it the installer's default
+ * applies. Its tool server (mcpo) merges `data\mcpo-extra.json` into the
+ * servers that Prestige and Prestige IDE give their agents.
+ */
+const aiWorkstationLocation = (
+  context: ClientPathContext,
+): Result<ClientLocation, ClientPathFailure> => {
+  const paths = context.platform === "win32" ? win32 : { join, isAbsolute };
+  const studio = paths.join(context.home, "RG Studios");
+  const recordPath = paths.join(studio, "workstation-folder.txt");
+  let root = paths.join(studio, "Workstation");
+  try {
+    const recorded = readFileSync(recordPath, "utf8")
+      .replace(/^\uFEFF/u, "")
+      .trim();
+    if (recorded.length > 0) {
+      if (!paths.isAbsolute(recorded))
+        return err({
+          path: recordPath,
+          message: `${recordPath} names ${JSON.stringify(recorded)}, which is not an absolute folder. Repair it or rerun the Workstation installer before configuring the Workstation.`,
+        });
+      root = recorded;
+    }
+  } catch (cause: unknown) {
+    if (!(cause instanceof Error && "code" in cause && cause.code === "ENOENT"))
+      return err({
+        path: recordPath,
+        message: `${recordPath} could not be read: ${cause instanceof Error ? cause.message : String(cause)}. Check its permissions before configuring the Workstation.`,
+      });
+  }
+  return ok({
+    configPath: paths.join(root, "data", "mcpo-extra.json"),
+    markerPath: paths.join(root, "tools", "mcpo-config.json"),
+  });
 };
 
 const devinDirectory = ({ home, platform, env }: ClientPathContext): string =>
@@ -696,6 +740,16 @@ export const SUPPORTED_CLIENT_DEFINITIONS = [
     format: "dsh",
   },
   {
+    name: "ai_workstation",
+    displayName: "Custom AI Workstation (Prestige, Prestige IDE)",
+    location: aiWorkstationLocation,
+    // Local models choose poorly among hundreds of tool schemas.
+    registrationEnvironment: { REA_MCP_TOOL_SURFACE: "router" },
+    registrationNote:
+      "The Workstation's tool server reads this file when start-all.ps1 or update-tools.ps1 runs. After setup, run update-tools.ps1 in the Workstation folder, then tick rea under MCP tools in Prestige IDE's Settings.",
+    format: "json",
+  },
+  {
     name: "grok_bot",
     displayName: "Grok Bot",
     configPath: grokBotDirectory,
@@ -785,6 +839,12 @@ export const supportedClients = (
         ...(definition.quitBeforeSetup === true
           ? { quitBeforeSetup: true }
           : {}),
+        ...(definition.registrationEnvironment === undefined
+          ? {}
+          : { registrationEnvironment: definition.registrationEnvironment }),
+        ...(definition.registrationNote === undefined
+          ? {}
+          : { registrationNote: definition.registrationNote }),
         format: definition.format,
       };
     } catch (cause: unknown) {

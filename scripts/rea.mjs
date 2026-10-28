@@ -11,8 +11,14 @@ const { default: packageJson } = await import("../package.json", {
   with: { type: "json" },
 });
 process.env.REA_PACKAGE_VERSION = packageJson.version;
+// `mcp --router` advertises three router tools instead of the whole catalog,
+// for clients that send every tool schema to a small local model.
+const isRouterMode =
+  args.length === 2 && args[0] === "mcp" && args[1] === "--router";
+if (isRouterMode) process.env.REA_MCP_TOOL_SURFACE = "router";
 const isMcpMode =
-  args.length === 1 && (args[0] === "--mcp" || args[0] === "mcp");
+  isRouterMode ||
+  (args.length === 1 && (args[0] === "--mcp" || args[0] === "mcp"));
 const isMcpDoctorMode = args[0] === "mcp" && args[1] === "doctor";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 

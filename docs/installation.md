@@ -454,32 +454,33 @@ readiness for one task instead of auditing every integration, see
 Setup can configure these clients for REA's local MCP server. Grok Bot uses a manual
 hosted connector; see [its configuration](client-configuration.md#other-client-settings).
 
-| Client             | `--client` value |
-| ------------------ | ---------------- |
-| Claude Code        | `claude_code`    |
-| Claude Desktop     | `claude_desktop` |
-| Codex              | `codex`          |
-| Cursor             | `cursor`         |
-| Gemini CLI         | `gemini_cli`     |
-| Windsurf           | `windsurf`       |
-| Devin              | `devin`          |
-| OpenCode           | `opencode`       |
-| Antigravity        | `antigravity`    |
-| GitHub Copilot CLI | `copilot_cli`    |
-| Command Code       | `commandcode`    |
-| Qwen Code          | `qwen_code`      |
-| Kimi Code          | `kimi`           |
-| VS Code            | `vscode`         |
-| Grok Build         | `grok_build`     |
-| OMP                | `omp`            |
-| Pi                 | `pi`             |
-| Hermes             | `hermes`         |
-| Qoder              | `qoder`          |
-| Factory Droid      | `droid`          |
-| Trae               | `trae`           |
-| WorkBuddy          | `workbuddy`      |
-| ZCode              | `zcode`          |
-| DeepSeek Harness   | `dsh`            |
+| Client                                         | `--client` value |
+| ---------------------------------------------- | ---------------- |
+| Claude Code                                    | `claude_code`    |
+| Claude Desktop                                 | `claude_desktop` |
+| Codex                                          | `codex`          |
+| Cursor                                         | `cursor`         |
+| Gemini CLI                                     | `gemini_cli`     |
+| Windsurf                                       | `windsurf`       |
+| Devin                                          | `devin`          |
+| OpenCode                                       | `opencode`       |
+| Antigravity                                    | `antigravity`    |
+| GitHub Copilot CLI                             | `copilot_cli`    |
+| Command Code                                   | `commandcode`    |
+| Qwen Code                                      | `qwen_code`      |
+| Kimi Code                                      | `kimi`           |
+| VS Code                                        | `vscode`         |
+| Grok Build                                     | `grok_build`     |
+| OMP                                            | `omp`            |
+| Pi                                             | `pi`             |
+| Hermes                                         | `hermes`         |
+| Qoder                                          | `qoder`          |
+| Factory Droid                                  | `droid`          |
+| Trae                                           | `trae`           |
+| WorkBuddy                                      | `workbuddy`      |
+| ZCode                                          | `zcode`          |
+| DeepSeek Harness                               | `dsh`            |
+| Custom AI Workstation (Prestige, Prestige IDE) | `ai_workstation` |
 
 `dsh`, `kimi`, and `workbuddy` require a release containing them. The registry
 check above does not cover them.
@@ -490,6 +491,10 @@ configuration paths, profiles, trust policies, and schema-limit workarounds.
 ### DeepSeek Harness
 
 See [the Cordis patch and launcher setup](client-configuration.md#deepseek-harness).
+
+### Custom AI Workstation
+
+See [the Workstation tool server](client-configuration.md#custom-ai-workstation).
 
 ### Other client settings
 

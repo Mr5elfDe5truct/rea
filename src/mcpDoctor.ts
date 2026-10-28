@@ -11,6 +11,8 @@ import {
   parseMcpInputSchemaProfile,
 } from "./config/mcpInputSchemaProfile.js";
 import { parseMcpOutputSchemaProfile } from "./config/mcpOutputSchemaProfile.js";
+import { parseMcpToolSurface } from "./config/mcpToolSurface.js";
+import { ROUTER_TOOL_NAMES } from "./server/toolRouterTransport.js";
 import { PROMPT_CONTRACTS } from "./contracts/promptContracts.js";
 import { TOOL_CONTRACTS } from "./contracts/toolContracts.js";
 import { err, ok } from "./domain/result.js";
@@ -81,6 +83,12 @@ interface McpDoctorCheck {
 /** Diagnose the actual production stdio adapter with one startup-bounded SDK session. */
 export const runProductionMcpDoctor = async (options: McpDoctorOptions) => {
   const catalog = catalogIdentityForEnvironment(options.environment);
+  const surface = parseMcpToolSurface(options.environment.REA_MCP_TOOL_SURFACE);
+  // The router advertises three tools; the catalog behind it stays digested.
+  const expectedTools =
+    surface.ok && surface.value === "router"
+      ? ROUTER_TOOL_NAMES
+      : TOOL_CONTRACTS.map(({ name }) => name);
   const deadline =
     performance.now() +
     (options.deadlineMs ?? MCP_STARTUP_POLICY.doctorDeadlineMs);
@@ -111,6 +119,7 @@ export const runProductionMcpDoctor = async (options: McpDoctorOptions) => {
       deadline,
       controller.signal,
       catalog,
+      expectedTools,
     );
   } catch (cause: unknown) {
     result = {
@@ -197,6 +206,7 @@ const inspectProductionMcpSession = async (
   deadline: number,
   signal: AbortSignal,
   catalog: ReturnType<typeof createCatalogIdentity>,
+  expectedTools: readonly string[],
 ) => {
   const request = requestOptions(deadline, signal);
   const [tools, prompts] = await Promise.all([
@@ -217,7 +227,7 @@ const inspectProductionMcpSession = async (
     );
   const inventory = {
     tools: compareInventory(
-      TOOL_CONTRACTS.map(({ name }) => name),
+      expectedTools,
       tools.tools.map(({ name }) => name),
     ),
     prompts: compareInventory(
